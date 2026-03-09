@@ -1,19 +1,19 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity()
-export class Monstruo {
+export class Pelicula {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  name: string;
+  title: string;
 
   @Column()
-  species: string;
+  director: string;
 
   @Column()
-  element: string;
+  year: number;
 
   @Column()
-  weakness: string;
+  length_minutes: number;
 }

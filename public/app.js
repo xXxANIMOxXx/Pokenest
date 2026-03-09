@@ -1,4 +1,4 @@
-let currentView = 'monstruos'; // or 'pokemon'
+let currentView = 'peliculas'; // or 'pokemon'
 let allData = [];
 
 // DOM Elements
@@ -8,9 +8,10 @@ const resetBtn = document.getElementById('resetBtn');
 const dataGrid = document.getElementById('dataGrid');
 const resultsCount = document.getElementById('resultsCount');
 
-// Monster specific filters
+// Movie specific filters
 const movieFilters = document.getElementById('movieFilters');
-const weaknessInput = document.getElementById('weaknessInput');
+const minYearInput = document.getElementById('minYear');
+const maxYearInput = document.getElementById('maxYear');
 
 // Event Listeners
 navBtns.forEach(btn => {
@@ -24,10 +25,12 @@ navBtns.forEach(btn => {
 });
 
 inputSearch.addEventListener('input', renderData);
-if(weaknessInput) weaknessInput.addEventListener('input', renderData);
+minYearInput.addEventListener('input', renderData);
+maxYearInput.addEventListener('input', renderData);
 resetBtn.addEventListener('click', () => {
     inputSearch.value = '';
-    if(weaknessInput) weaknessInput.value = '';
+    minYearInput.value = '';
+    maxYearInput.value = '';
     renderData();
 });
 
@@ -36,16 +39,16 @@ function updateUIForView() {
     const subtitle = document.getElementById('view-subtitle');
 
     // Theme switching
-    document.body.classList.remove('theme-monstruos', 'theme-pokemon');
+    document.body.classList.remove('theme-peliculas', 'theme-pokemon');
 
-    if (currentView === 'monstruos') {
-        document.body.classList.add('theme-monstruos');
-        title.innerText = 'Monster Hunter';
-        subtitle.innerText = 'Explora y descubre debilidades del ecosistema.';
+    if (currentView === 'peliculas') {
+        document.body.classList.add('theme-peliculas');
+        title.innerText = 'Películas';
+        subtitle.innerText = 'Explora y gestiona el catálogo cinematográfico.';
         movieFilters.style.display = 'flex';
-        inputSearch.placeholder = 'Ej: Rathalos, Wyvern...';
-        if (window.location.pathname !== '/monstruos') {
-            window.history.pushState({}, '', '/monstruos');
+        inputSearch.placeholder = 'Ej: Matrix, El Padrino...';
+        if (window.location.pathname !== '/peliculas') {
+            window.history.pushState({}, '', '/peliculas');
         }
     } else {
         document.body.classList.add('theme-pokemon');
@@ -53,7 +56,8 @@ function updateUIForView() {
         subtitle.innerText = 'Pokedex completa con estadísticas de combate.';
         movieFilters.style.display = 'none';
         inputSearch.placeholder = 'Ej: Pikachu, Charizard...';
-        if(weaknessInput) weaknessInput.value = '';
+        minYearInput.value = '';
+        maxYearInput.value = '';
         if (window.location.pathname !== '/pokemon') {
             window.history.pushState({}, '', '/pokemon');
         }
@@ -68,13 +72,25 @@ async function fetchData() {
         if (!response.ok) throw new Error('Network error');
         allData = await response.json();
 
-        // Load images for monsters
-        if (currentView === 'monstruos') {
-            resultsCount.innerText = 'Cargando ecosistema...';
-            allData.forEach(monster => {
-                // Placeholder images based on element/species if a real API isn't available
-                monster.posterUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(monster.name)}&background=2b2b2b&color=f2e3c6&size=400&font-size=0.25&length=3`;
-            });
+        // Load real movie posters asynchronously
+        if (currentView === 'peliculas') {
+            resultsCount.innerText = 'Cargando portadas de películas...';
+            await Promise.all(allData.map(async (movie) => {
+                try {
+                    const searchUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(movie.title)}&entity=movie&limit=1`;
+                    const res = await fetch(searchUrl);
+                    const data = await res.json();
+                    if (data.results && data.results.length > 0) {
+                        // Replace 100x100 with a larger resolution like 600x900
+                        movie.posterUrl = data.results[0].artworkUrl100.replace('100x100bb', '600x900bb');
+                    } else {
+                        // Fallback image
+                        movie.posterUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(movie.title)}&background=random&color=fff&size=400&font-size=0.33`;
+                    }
+                } catch (e) {
+                    movie.posterUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(movie.title)}&background=random&color=fff&size=400&font-size=0.33`;
+                }
+            }));
         }
 
         renderData();
@@ -88,11 +104,12 @@ function renderData() {
     const search = inputSearch.value.toLowerCase();
 
     let filtered = allData.filter(item => {
-        if (currentView === 'monstruos') {
-            const matchesSearch = item.name.toLowerCase().includes(search) || item.species.toLowerCase().includes(search);
-            const weakness = weaknessInput ? weaknessInput.value.toLowerCase() : '';
-            const matchesWeakness = weakness ? item.weakness.toLowerCase().includes(weakness) : true;
-            return matchesSearch && matchesWeakness;
+        if (currentView === 'peliculas') {
+            const matchesSearch = item.title.toLowerCase().includes(search) || item.director.toLowerCase().includes(search);
+            const minYear = minYearInput.value ? parseInt(minYearInput.value) : 0;
+            const maxYear = maxYearInput.value ? parseInt(maxYearInput.value) : 9999;
+            const matchesYear = item.year >= minYear && item.year <= maxYear;
+            return matchesSearch && matchesYear;
         } else {
             return item.name.toLowerCase().includes(search) || item.type.toLowerCase().includes(search);
         }
@@ -101,28 +118,29 @@ function renderData() {
     resultsCount.innerText = `Mostrando ${filtered.length} ${currentView}`;
 
     dataGrid.innerHTML = filtered.map(item => {
-        if (currentView === 'monstruos') {
-            const monsterPoster = item.posterUrl;
+        if (currentView === 'peliculas') {
+            // Using the real poster URL fetched during load
+            const moviePoster = item.posterUrl;
 
             return `
                 <div class="card card-with-image">
                     <div class="card-image-container">
-                        <img src="${monsterPoster}" alt="${item.name}" class="card-image">
+                        <img src="${moviePoster}" alt="Poster de ${item.title}" class="card-image">
                     </div>
                     <div class="card-content">
-                        <h3 class="card-title">${item.name}</h3>
+                        <h3 class="card-title">${item.title}</h3>
                         <div class="card-info">
                             <div class="info-row">
-                                <span class="info-label">Especie</span>
-                                <span class="info-value">${item.species}</span>
+                                <span class="info-label">Director</span>
+                                <span class="info-value">${item.director}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label">Elemento</span>
-                                <span class="badge" style="background: var(--accent); color: #fff;">${item.element}</span>
+                                <span class="info-label">Estreno</span>
+                                <span class="info-value">${item.year}</span>
                             </div>
                             <div class="info-row">
-                                <span class="info-label">Debilidad</span>
-                                <span class="info-value">💥 ${item.weakness}</span>
+                                <span class="info-label">Duración</span>
+                                <span class="info-value">${item.length_minutes} min</span>
                             </div>
                         </div>
                     </div>

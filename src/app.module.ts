@@ -3,9 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { Monstruo } from './monstruos/entidades/monstruo.entidad';
+import { Pelicula } from './peliculas/entidades/pelicula.entidad';
 import { Pokemon } from './pokemon/entidades/pokemon.entidad';
-import { MonstruosModulo } from './monstruos/monstruos.modulo';
+import { PeliculasModulo } from './peliculas/peliculas.modulo';
 import { PokemonModulo } from './pokemon/pokemon.modulo';
 
 @Module({
@@ -22,11 +22,11 @@ import { PokemonModulo } from './pokemon/pokemon.modulo';
       useFactory: (configService: ConfigService) => ({
         type: 'sqlite',
         database: 'pokenest.db',
-        entities: [Monstruo, Pokemon],
+        entities: [Pelicula, Pokemon],
         synchronize: true,
       }),
     }),
-    MonstruosModulo,
+    PeliculasModulo,
     PokemonModulo,
   ],
 })
