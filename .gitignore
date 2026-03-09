@@ -1,0 +1,4 @@
+node_modules
+.env
+pokenest.db
+dist

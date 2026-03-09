@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokenest Dashboard</title>
+    <link rel="stylesheet" href="/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <nav class="top-nav">
+            <div class="logo">
+                Pokenest
+            </div>
+            <div class="nav-links">
+                <button class="nav-btn" data-view="pokemon">Pokémon</button>
+                <button class="nav-btn active" data-view="monstruos">Monster Hunter</button>
+            </div>
+        </nav>
+
+        <!-- Main Workspace -->
+        <main class="workspace">
+            <header class="workspace-header">
+                <h1 id="view-title">Monster Hunter</h1>
+                <p id="view-subtitle" class="subtitle">Explora y descubre debilidades del ecosistema.</p>
+            </header>
+
+            <!-- Filters Section -->
+            <section class="filters-bar">
+                <div class="filter-group">
+                    <label>Buscar (Nombre/Especie)</label>
+                    <div class="input-wrapper">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        </svg>
+                        <input type="text" id="searchInput" placeholder="Ej: Rathalos, Wyvern...">
+                    </div>
+                </div>
+
+                <div class="filter-group date-filters" id="movieFilters">
+                    <div class="date-input">
+                        <label>Debilidad</label>
+                        <input type="text" id="weaknessInput" placeholder="Ej: Dragon, Ice, Fire...">
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button id="resetBtn" class="btn-secondary">Limpiar filtros</button>
+                </div>
+            </section>
+
+            <!-- Status text -->
+            <div class="results-status">
+                <span id="resultsCount">Cargando...</span>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="grid-container" id="dataGrid">
+                <!-- Cards will be injected here via JS -->
+            </div>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+
+</html>
